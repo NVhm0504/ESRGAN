@@ -1,0 +1,82 @@
+{
+  "generator": "esrgan_tug.data.simulator (procedural, NumPy/OpenCV)",
+  "preset": "mini (class-balanced subset for the single-file package)",
+  "seed": 2026,
+  "hr_size": 192,
+  "scale": 4,
+  "gsd_m": 0.5,
+  "classes": [
+    "water",
+    "vegetation",
+    "built_up",
+    "barren",
+    "cropland"
+  ],
+  "scene_types": [
+    "harbour",
+    "urban_grid",
+    "farmland",
+    "river_delta",
+    "quarry"
+  ],
+  "degradation": "Eq.(1): aniso Gaussian sigma~U[0.6,2.4] -> decimate x4 -> Gaussian noise U[0,12]/255 -> JPEG q~U[45,95]",
+  "rs12k_counts": {
+    "test": 35,
+    "train": 225,
+    "val": 25
+  },
+  "rs12k_class_counts": {
+    "barren": {
+      "test": 7,
+      "train": 45,
+      "val": 5
+    },
+    "built_up": {
+      "test": 7,
+      "train": 45,
+      "val": 5
+    },
+    "cropland": {
+      "test": 7,
+      "train": 45,
+      "val": 5
+    },
+    "vegetation": {
+      "test": 7,
+      "train": 45,
+      "val": 5
+    },
+    "water": {
+      "test": 7,
+      "train": 45,
+      "val": 5
+    }
+  },
+  "rs12k_regions": {
+    "train": 19,
+    "val": 5,
+    "test": 6
+  },
+  "region_overlap_between_splits": 0,
+  "lulc_class_counts": {
+    "barren": 20,
+    "built_up": 20,
+    "cropland": 20,
+    "vegetation": 20,
+    "water": 20
+  },
+  "lulc_regions_subset_of_test": true,
+  "mean_purity": {
+    "rs12k": 0.8436648672598379,
+    "lulc": 0.8439968532986111
+  },
+  "scene_type_counts_test": {
+    "river_delta": 22,
+    "urban_grid": 17,
+    "farmland": 15,
+    "quarry": 11,
+    "harbour": 10
+  },
+  "seconds": 37.5,
+  "note": "Subset of the mini preset (seed 2026). Regenerate the full paper preset with: python scripts/make_dataset.py --preset paper --out datasets"
+}
