@@ -1,0 +1,81 @@
+{
+  "generator": "esrgan_tug.data.simulator (procedural, NumPy/OpenCV)",
+  "preset": "paper",
+  "seed": 2026,
+  "hr_size": 192,
+  "scale": 4,
+  "gsd_m": 0.5,
+  "classes": [
+    "water",
+    "vegetation",
+    "built_up",
+    "barren",
+    "cropland"
+  ],
+  "scene_types": [
+    "harbour",
+    "urban_grid",
+    "farmland",
+    "river_delta",
+    "quarry"
+  ],
+  "degradation": "Eq.(1): aniso Gaussian sigma~U[0.6,2.4] -> decimate x4 -> Gaussian noise U[0,12]/255 -> JPEG q~U[45,95]",
+  "rs12k_counts": {
+    "test": 1500,
+    "train": 9500,
+    "val": 1000
+  },
+  "rs12k_class_counts": {
+    "barren": {
+      "test": 300,
+      "train": 1900,
+      "val": 200
+    },
+    "built_up": {
+      "test": 300,
+      "train": 1900,
+      "val": 200
+    },
+    "cropland": {
+      "test": 300,
+      "train": 1900,
+      "val": 200
+    },
+    "vegetation": {
+      "test": 300,
+      "train": 1900,
+      "val": 200
+    },
+    "water": {
+      "test": 300,
+      "train": 1900,
+      "val": 200
+    }
+  },
+  "rs12k_regions": {
+    "train": 190,
+    "val": 20,
+    "test": 30
+  },
+  "region_overlap_between_splits": 0,
+  "lulc_class_counts": {
+    "barren": 500,
+    "built_up": 500,
+    "cropland": 500,
+    "vegetation": 500,
+    "water": 500
+  },
+  "lulc_regions_subset_of_test": true,
+  "mean_purity": {
+    "rs12k": 0.8403596756546586,
+    "lulc": 0.8372009114583332
+  },
+  "scene_type_counts_test": {
+    "river_delta": 380,
+    "farmland": 349,
+    "urban_grid": 301,
+    "quarry": 253,
+    "harbour": 217
+  },
+  "seconds": 582.6
+}

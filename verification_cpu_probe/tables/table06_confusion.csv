@@ -1,0 +1,6 @@
+Actual \ Pred.,Wat,Veg,Bui,Bar,Cro,Tot,Rec %
+Water,488,12,0,0,0,500,97.6
+Vegetation,55,194,0,0,251,500,38.8
+Built-up,266,12,0,10,212,500,0.0
+Barren,113,0,0,32,355,500,6.4
+Cropland,87,60,0,10,343,500,68.6

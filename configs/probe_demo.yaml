@@ -1,0 +1,25 @@
+# CPU-only verification of the evaluation stack (no PyTorch): classical reconstructions
+# + the hand-crafted probe classifier stand in for the neural models and the ResNet-50.
+base: paper.yaml
+paths:
+  runs: runs_probe
+report:
+  proposed: backprojection
+  names:
+    lr_nearest: "LR (x4 down)"
+    bilinear: Bilinear
+    bicubic: Bicubic
+    lanczos: Lanczos
+    bicubic_usm: Bicubic + unsharp
+    backprojection: Back-projection
+    hr: HR reference
+  recon_methods: [bilinear, bicubic, lanczos, bicubic_usm, backprojection]
+  fig3_methods: [bilinear, bicubic, lanczos, bicubic_usm, backprojection]
+  fig5_methods: [bilinear, bicubic, bicubic_usm, backprojection]
+  fig6_methods: [lr_nearest, bicubic, bicubic_usm, backprojection, hr]
+  task_conditions: [lr_nearest, bilinear, bicubic, lanczos, bicubic_usm, backprojection, hr]
+  table8_conditions: [lr_nearest, bilinear, bicubic, lanczos, bicubic_usm, backprojection, hr]
+  tug_candidates: [bilinear, bicubic, lanczos, bicubic_usm, backprojection]
+  ablation: []
+  ttest_baselines: [bicubic, lanczos]
+  mcnemar_baseline: bicubic

@@ -1,0 +1,6 @@
+# ~2 % of the paper's iteration budget: a same-day GPU run that exercises every
+# model and produces complete (but under-trained) tables and figures.
+base: paper.yaml
+iters_scale: 0.02
+train: {val_every: 1000, ckpt_every: 2000, log_every: 50}
+classifier: {epochs: 8}

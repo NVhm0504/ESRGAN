@@ -1,0 +1,84 @@
+{
+  "fidelity_set": "LULC",
+  "t_lr_oa": 0.4648,
+  "t_hr_oa": 0.9912,
+  "selected_model": {
+    "by_tug": "backprojection",
+    "by_psnr": "bilinear",
+    "by_ssim": "bilinear"
+  },
+  "agreement": {
+    "psnr": {
+      "kendall_tau": -0.39999999999999997,
+      "p_tau": 0.48333333333333334,
+      "spearman_rho": -0.39999999999999997,
+      "p_rho": 0.5046315754686912,
+      "rank_reversals": [
+        {
+          "higher_psnr": "bilinear",
+          "lower_tug": "bicubic"
+        },
+        {
+          "higher_psnr": "bilinear",
+          "lower_tug": "lanczos"
+        },
+        {
+          "higher_psnr": "bilinear",
+          "lower_tug": "backprojection"
+        },
+        {
+          "higher_psnr": "bicubic",
+          "lower_tug": "lanczos"
+        },
+        {
+          "higher_psnr": "bicubic",
+          "lower_tug": "backprojection"
+        },
+        {
+          "higher_psnr": "lanczos",
+          "lower_tug": "backprojection"
+        },
+        {
+          "higher_psnr": "bicubic_usm",
+          "lower_tug": "backprojection"
+        }
+      ]
+    },
+    "ssim": {
+      "kendall_tau": -0.39999999999999997,
+      "p_tau": 0.48333333333333334,
+      "spearman_rho": -0.39999999999999997,
+      "p_rho": 0.5046315754686912,
+      "rank_reversals": [
+        {
+          "higher_ssim": "bilinear",
+          "lower_tug": "bicubic"
+        },
+        {
+          "higher_ssim": "bilinear",
+          "lower_tug": "lanczos"
+        },
+        {
+          "higher_ssim": "bilinear",
+          "lower_tug": "backprojection"
+        },
+        {
+          "higher_ssim": "bicubic",
+          "lower_tug": "lanczos"
+        },
+        {
+          "higher_ssim": "bicubic",
+          "lower_tug": "backprojection"
+        },
+        {
+          "higher_ssim": "lanczos",
+          "lower_tug": "backprojection"
+        },
+        {
+          "higher_ssim": "bicubic_usm",
+          "lower_tug": "backprojection"
+        }
+      ]
+    }
+  }
+}

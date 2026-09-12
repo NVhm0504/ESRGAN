@@ -1,0 +1,15 @@
+# Minutes-long end-to-end pipeline check (run on the mini dataset first).
+base: paper.yaml
+iters_scale: 0.0004       # 200 pre-train + 160 adversarial iterations
+paths:
+  runs: runs_smoke
+  rs12k: datasets_mini/RS-12K
+  lulc: datasets_mini/LULC-Task
+  showcase: datasets_mini/Showcase
+data: {batch_size: 4, num_workers: 2}
+train: {val_every: 100, val_images: 20, ckpt_every: 1000, log_every: 20}
+classifier: {epochs: 1, batch_size: 16}
+test_sets:
+  RS-Bench: [datasets_mini/RS-12K/test/LR, datasets_mini/RS-12K/test/HR]
+  LULC: [datasets_mini/LULC-Task/LR, datasets_mini/LULC-Task/HR]
+  Showcase: [datasets_mini/Showcase/LR, datasets_mini/Showcase/HR]

@@ -1,0 +1,155 @@
+# Full configuration from Section III-IV and Table III of the paper.
+# Budget on one RTX A5000 (24 GB): proposed model ~52 h; all 11 generators ~2 weeks.
+seed: 0
+scale: 4
+iters_scale: 1.0          # multiply every iteration count / milestone (quick.yaml, smoke.yaml lower this)
+
+paths:
+  runs: runs
+  rs12k: datasets/RS-12K
+  lulc: datasets/LULC-Task
+  showcase: datasets/Showcase
+  div2k_sub: datasets/DIV2K/train_HR_sub     # optional (prepare_real_data.py div2k); skipped if missing
+  benchmarks: datasets/benchmarks             # optional: <name>/HR and <name>/LR_bicubic/X4
+
+data:
+  hr_patch: 192
+  batch_size: 16
+  num_workers: 8
+  rs_share: 0.5            # share of training samples drawn from RS-12K when DIV2K is present
+  degradation: {sigma: [0.6, 2.4], noise: [0.0, 12.0], jpeg: [45, 95], kernel_size: 21}
+
+train:
+  log_every: 100
+  val_every: 5000
+  val_images: 400          # held-out validation split used for loss-weight selection
+  ckpt_every: 10000
+  amp: false
+  betas: [0.9, 0.999]
+  vgg_pretrained: true     # ImageNet VGG-19 for the perceptual loss (false only for offline self-tests)
+
+classifier:
+  arch: resnet50
+  pretrained: true         # ImageNet initialisation, then trained once on RS-12K train HR and frozen
+  epochs: 30
+  batch_size: 64
+  lr: 0.01
+  weight_decay: 1.0e-4
+
+test_sets:                 # name: [LR dir, HR dir]; missing folders are skipped
+  RS-Bench: [datasets/RS-12K/test/LR, datasets/RS-12K/test/HR]
+  LULC: [datasets/LULC-Task/LR, datasets/LULC-Task/HR]
+  Showcase: [datasets/Showcase/LR, datasets/Showcase/HR]
+  Set5: [datasets/benchmarks/Set5/LR_bicubic/X4, datasets/benchmarks/Set5/HR]
+  Set14: [datasets/benchmarks/Set14/LR_bicubic/X4, datasets/benchmarks/Set14/HR]
+  BSD100: [datasets/benchmarks/BSD100/LR_bicubic/X4, datasets/benchmarks/BSD100/HR]
+  Urban100: [datasets/benchmarks/Urban100/LR_bicubic/X4, datasets/benchmarks/Urban100/HR]
+
+_adv_schedule: &adv
+  iters: 400000
+  lr: 2.0e-4
+  milestones: [50000, 100000, 200000, 300000]
+
+models:
+  # ---------------- proposed ESR-GAN = ablation D ----------------
+  esrgan_da:
+    generator: {arch: rrdbnet, n_blocks: 8, nf: 64, gc: 32, res_scale: 0.2, attention: true, reduction: 16, sa_kernel: 7, upsampler: pixelshuffle}
+    pretrain: {iters: 500000, lr: 2.0e-4, milestones: [200000, 400000], loss: l1}
+    gan:
+      <<: *adv
+      discriminator: {arch: vgg, nf: 64, pool_size: 6, fc: 1024}
+      gan_type: ragan
+      pixel: l1
+      perceptual_layers: {conv5_4: 1.0}
+      weights: {pix: 1.0e-2, per: 1.0, adv: 5.0e-3, freq: 5.0e-2, edge: 1.0e-1}
+      tv_weight: 1.0e-4
+
+  # ---------------- cumulative ablation (Table IX) ----------------
+  ablation_A:              # RRDB baseline (8 blocks, no attention), pixel + perceptual + RaGAN
+    inherit: esrgan_da
+    generator: {attention: false}
+    gan: {weights: {freq: 0.0, edge: 0.0}}
+  ablation_B:              # + dual attention (re-uses the esrgan_da PSNR pre-training)
+    inherit: esrgan_da
+    pretrain: null
+    gan: {init_from: "esrgan_da:pretrain", weights: {freq: 0.0, edge: 0.0}}
+  ablation_C:              # + L_freq
+    inherit: esrgan_da
+    pretrain: null
+    gan: {init_from: "esrgan_da:pretrain", weights: {edge: 0.0}}
+
+  # ---------------- competing methods, retrained on the same split ----------------
+  bicubic:
+    generator: {arch: bicubic}
+  srcnn:
+    generator: {arch: srcnn, f1: 64, f2: 32}
+    pretrain: {iters: 500000, lr: 1.0e-4, milestones: [250000], loss: mse}
+  vdsr:
+    generator: {arch: vdsr, depth: 20, nf: 64}
+    pretrain: {iters: 500000, lr: 1.0e-4, milestones: [250000], loss: mse, grad_clip: 0.4}
+  srresnet:
+    generator: {arch: srresnet, n_blocks: 16, nf: 64}
+    pretrain: {iters: 500000, lr: 1.0e-4, milestones: [250000], loss: mse}
+  srgan:                   # SRResNet init, VGG54 content loss + 1e-3 standard adversarial loss
+    generator: {arch: srresnet, n_blocks: 16, nf: 64}
+    gan:
+      iters: 200000
+      lr: 1.0e-4
+      milestones: [100000]
+      init_from: "srresnet:final"
+      discriminator: {arch: vgg, nf: 64, pool_size: 6, fc: 1024}
+      gan_type: vanilla
+      pixel: mse
+      perceptual_layers: {conv5_4: 1.0}
+      weights: {pix: 0.0, per: 6.0e-3, adv: 1.0e-3}
+  esrgan:                  # 23 RRDB, nearest-conv upsampling, L1 1e-2 + VGG54 + RaGAN 5e-3
+    generator: {arch: rrdbnet, n_blocks: 23, nf: 64, gc: 32, res_scale: 0.2, attention: false, upsampler: nearest}
+    pretrain: {iters: 500000, lr: 2.0e-4, milestones: [200000, 400000], loss: l1}
+    gan:
+      <<: *adv
+      discriminator: {arch: vgg, nf: 64, pool_size: 6, fc: 1024}
+      gan_type: ragan
+      pixel: l1
+      perceptual_layers: {conv5_4: 1.0}
+      weights: {pix: 1.0e-2, per: 1.0, adv: 5.0e-3}
+  realesrgan:              # high-order degradation, U-Net SN discriminator, L1 1 + multi-layer VGG 1 + GAN 0.1
+    generator: {arch: rrdbnet, n_blocks: 23, nf: 64, gc: 32, res_scale: 0.2, attention: false, upsampler: nearest}
+    degradation: high_order
+    pretrain: {iters: 500000, lr: 2.0e-4, milestones: [200000, 400000], loss: l1}
+    gan:
+      iters: 400000
+      lr: 1.0e-4
+      milestones: [200000]
+      discriminator: {arch: unet_sn, nf: 64, skip: true}
+      gan_type: vanilla
+      pixel: l1
+      perceptual_layers: {conv1_2: 0.1, conv2_2: 0.1, conv3_4: 1.0, conv4_4: 1.0, conv5_4: 1.0}
+      perceptual_criterion: l1
+      weights: {pix: 1.0, per: 1.0, adv: 0.1}
+
+report:
+  proposed: esrgan_da
+  names:
+    lr_nearest: "LR (x4 down)"
+    bicubic: Bicubic
+    srcnn: SRCNN
+    vdsr: VDSR
+    srresnet: SRResNet
+    srgan: SRGAN
+    esrgan: ESRGAN
+    realesrgan: Real-ESRGAN
+    esrgan_da: Proposed ESR-GAN
+    ablation_A: "A: RRDB baseline"
+    ablation_B: "B: + dual attention"
+    ablation_C: "C: + L_freq"
+    hr: HR reference
+  recon_methods: [bicubic, srcnn, vdsr, srresnet, srgan, esrgan, realesrgan, esrgan_da]
+  fig3_methods: [bicubic, srresnet, esrgan, realesrgan, esrgan_da]
+  fig5_methods: [esrgan, realesrgan, srresnet, esrgan_da]
+  fig6_methods: [lr_nearest, bicubic, srresnet, esrgan, esrgan_da, hr]
+  task_conditions: [lr_nearest, bicubic, srcnn, vdsr, srresnet, srgan, esrgan, realesrgan, ablation_A, ablation_B, ablation_C, esrgan_da, hr]
+  table8_conditions: [lr_nearest, bicubic, srresnet, esrgan, esrgan_da, hr]
+  tug_candidates: [bicubic, srcnn, vdsr, srresnet, srgan, esrgan, realesrgan, esrgan_da]
+  ablation: [ablation_A, ablation_B, ablation_C, esrgan_da]
+  ttest_baselines: [esrgan, realesrgan, srresnet]
+  mcnemar_baseline: esrgan
